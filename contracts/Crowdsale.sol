@@ -103,15 +103,15 @@ contract Crowdsale is Context, ReentrancyGuard {
         return _weiRaised;
     }
 
-    /**
+    /*
      * @dev low level token purchase ***DO NOT OVERRIDE***
      * This function has a non-reentrancy guard, so it shouldn't be called by
      * another `nonReentrant` function.
      * @param beneficiary Recipient of the token purchase
      */
-    function buyTokens(address beneficiary) public nonReentrant payable {
+    function buyTokens(address beneficiary_) public nonReentrant payable {
         uint256 weiAmount = msg.value;
-        _preValidatePurchase(beneficiary, weiAmount);
+        _preValidatePurchase(beneficiary_, weiAmount);
 
         // calculate token amount to be created
         uint256 tokens = _getTokenAmount(weiAmount);
@@ -119,16 +119,16 @@ contract Crowdsale is Context, ReentrancyGuard {
         // update state
         _weiRaised = _weiRaised.add(weiAmount);
 
-        _processPurchase(beneficiary, tokens);
-        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
+        _processPurchase(beneficiary_, tokens);
+        emit TokensPurchased(_msgSender(), beneficiary_, weiAmount, tokens);
 
-        _updatePurchasingState(beneficiary, weiAmount);
+        _updatePurchasingState(beneficiary_, weiAmount);
 
         _forwardFunds();
-        _postValidatePurchase(beneficiary, weiAmount);
+        _postValidatePurchase(beneficiary_, weiAmount);
     }
 
-    /**
+    /*
      * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met.
      * Use `super` in contracts that inherit from Crowdsale to extend their validations.
      * Example from CappedCrowdsale.sol's _preValidatePurchase method:
@@ -137,59 +137,59 @@ contract Crowdsale is Context, ReentrancyGuard {
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount) internal view virtual {
-        require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(weiAmount != 0, "Crowdsale: weiAmount is 0");
+    function _preValidatePurchase(address beneficiary_, uint256 weiAmount_) internal view virtual {
+        require(beneficiary_ != address(0), "Crowdsale: beneficiary is the zero address");
+        require(weiAmount_ != 0, "Crowdsale: weiAmount is 0");
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
     }
 
-    /**
+    /*
      * @dev Validation of an executed purchase. Observe state and use revert statements to undo rollback when valid
      * conditions are not met.
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
      */
-    function _postValidatePurchase(address beneficiary, uint256 weiAmount) internal view virtual{
+    function _postValidatePurchase(address beneficiary_, uint256 weiAmount_) internal view virtual{
         // solhint-disable-previous-line no-empty-blocks
     }
 
-    /**
+    /*
      * @dev Source of tokens. Override this method to modify the way in which the crowdsale ultimately gets and sends
      * its tokens.
      * @param beneficiary Address performing the token purchase
      * @param tokenAmount Number of tokens to be emitted
      */
-    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal virtual{
-        _token.safeTransfer(beneficiary, tokenAmount);
+    function _deliverTokens(address beneficiary_, uint256 tokenAmount_) internal virtual{
+        _token.safeTransfer(beneficiary_, tokenAmount_);
     }
 
-    /**
+    /*
      * @dev Executed when a purchase has been validated and is ready to be executed. Doesn't necessarily emit/send
      * tokens.
      * @param beneficiary Address receiving the tokens
      * @param tokenAmount Number of tokens to be purchased
      */
-    function _processPurchase(address beneficiary, uint256 tokenAmount) internal virtual{
-        _deliverTokens(beneficiary, tokenAmount);
+    function _processPurchase(address beneficiary_, uint256 tokenAmount_) internal virtual{
+        _deliverTokens(beneficiary_, tokenAmount_);
     }
 
-    /**
+    /*
      * @dev Override for extensions that require an internal state to check for validity (current user contributions,
      * etc.)
      * @param beneficiary Address receiving the tokens
      * @param weiAmount Value in wei involved in the purchase
      */
-    function _updatePurchasingState(address beneficiary, uint256 weiAmount) internal virtual{
+    function _updatePurchasingState(address beneficiary_, uint256 weiAmount_) internal virtual{
         // solhint-disable-previous-line no-empty-blocks
     }
 
-    /**
+    /*
      * @dev Override to extend the way in which ether is converted to tokens.
      * @param weiAmount Value in wei to be converted into tokens
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
-    function _getTokenAmount(uint256 weiAmount) internal view virtual returns (uint256) {
-        return weiAmount.mul(_rate);
+    function _getTokenAmount(uint256 weiAmount_) internal view virtual returns (uint256) {
+        return weiAmount_.mul(_rate);
     }
 
     /**

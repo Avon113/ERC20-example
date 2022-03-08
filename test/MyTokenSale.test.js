@@ -34,4 +34,20 @@ contract("TokenSale", async function(accounts){
         return expect(balanceBeforeAccount + 1).to.be.bignumber.equal(await tokenInstance.balanceOf(recipient));
 
     });
+
+    it("shoule be buy successfully", async () => {
+        let tokenInstance = await Token.deployed();
+        let tokenSaleInstance = await TokenSale.deployed();
+        let balanceBeforeAccount = await tokenInstance.balanceOf(anotherAccount);
+
+        let kycInstance = await KycContract.deployed();
+        await kycInstance.setKycCompleted(anotherAccount);
+
+        const trans = await tokenSaleInstance.buyTokens(anotherAccount, {
+            from: anotherAccount,
+            value: web3.utils.toWei("1", "wei")
+        })
+        console.log(trans)
+        return expect(balanceBeforeAccount + 1).to.be.bignumber.equal(await tokenInstance.balanceOf(anotherAccount));
+    })
 })

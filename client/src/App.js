@@ -7,7 +7,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = { loaded: false, kycAddress: "0x123",tokenSaleAddress: "", userToken: 0 };
+  state = { loaded: false, kycAddress: "0x123",tokenSaleAddress: "", userTokens: 0 };
 
   componentDidMount = async () => {
     try {
@@ -19,7 +19,6 @@ class App extends Component {
       // this.web3.accounts.privateKeyToAccount()
 
       // Get the contract instance.
-      //this.networkId = await this.web3.eth.net.getId(); <<- this doesn't work with MetaMask anymore
       this.networkId = await this.web3.eth.getChainId();
 
       this.myToken = new this.web3.eth.Contract(
@@ -27,17 +26,24 @@ class App extends Component {
           MyToken.networks[this.networkId] && MyToken.networks[this.networkId].address,
       );
 
+      const totalSupply = await this.myToken.methods.balanceOf('0x778779587228B82CF282ce15963942cb81490635').call();
+      console.log(totalSupply)
+
       this.myTokenSale = new this.web3.eth.Contract(
           MyTokenSale.abi,
           MyTokenSale.networks[this.networkId] && MyTokenSale.networks[this.networkId].address,
       );
+
       this.kycContract = new this.web3.eth.Contract(
           KycContract.abi,
           KycContract.networks[this.networkId] && KycContract.networks[this.networkId].address,
       );
+      // console.log(this.kycContract.methods)
+      // const owner = await this.kycContract.methods.owner().call();
+      // console.log(1)
+      // this.isOwner = this.accounts[0] === owner
 
-      const owner = await this.kycContract.methods.owner().call();
-      this.isOwner = this.accounts[0] === owner
+      this.isOwner = true
 
 
       // Set web3, accounts, and contract to the state, and then proceed with an
@@ -80,7 +86,7 @@ class App extends Component {
     const {kycAddress} = this.state;
 
     try {
-      const isKycCompleted = await this.kycContract.methods.kycAddress(kycAddress);
+      const isKycCompleted = await this.kycContract.methods.kycCompleted(kycAddress).call();
       if(isKycCompleted) {
         alert(`whitelist have address ${kycAddress} already!! `)
         return
@@ -94,7 +100,9 @@ class App extends Component {
   }
 
   handleBuyToken = async () => {
-    await this.myTokenSale.methods.buyTokens(this.accounts[0]).send({from: this.accounts[0], value: 1});
+    const trans = await this.myTokenSale.methods.buyTokens(this.accounts[0]).send({from: this.accounts[0], value: 1});
+    console.log(trans);
+    alert("buy successfully")
   }
 
 
@@ -104,7 +112,7 @@ class App extends Component {
     }
     return (
         <div className="App">
-            <h1>Capuccino Token for StarDucks</h1>
+            <h1>Garu Token Example</h1>
 
             <h2>Enable your account</h2>
             Address to allow: <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.handleInputChange} />
@@ -112,7 +120,7 @@ class App extends Component {
             <button onClick={this.test}>Test</button>
           <h2>Buy Garu Tokens</h2>
           <p>Send ether to this address: {this.state.tokenSaleAddress}</p>
-          <p>You have: {this.state.userToken}</p>
+          <p>You have: {this.state.userTokens}</p>
           <button type="button" onClick={this.handleBuyToken}>Buy more tokens</button>
         </div>
     );

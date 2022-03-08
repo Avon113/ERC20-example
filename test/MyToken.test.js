@@ -1,13 +1,17 @@
 const Token = artifacts.require("MyToken");
 const chai = require("./chaisetup");
+const path = require("path");
 const { expect } = chai
 const BN = web3.utils.BN;
+require('dotenv').config({
+    path: path.resolve(__dirname, '../client', ".env")
+});
 
 contract("Token Test", async accounts => {
     const [initialHolder, recipient, anotherAccount] = accounts;
 
     beforeEach(async () => {
-        this.myToken =  await Token.new(1000);
+        this.myToken =  await Token.new(process.env.INITIAL_TOKENS);
         // console.log(initialHolder, "initial Holder")
         // console.log(recipient, "recipient")
     })
@@ -15,6 +19,7 @@ contract("Token Test", async accounts => {
     it("all tokens should be in my account", async () => {
         let instance = this.myToken;
         let totalSupply = await instance.totalSupply();
+        console.log(web3.utils.fromWei(totalSupply, "wei"), "total supply")
         return expect(instance.balanceOf(initialHolder)).to.eventually.be.a.bignumber.equal(totalSupply);
     })
 
